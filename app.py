@@ -18,9 +18,9 @@ df['description'] = df['description'].fillna('')
 tfidf_matrix = vectorizer.fit_transform(df['description'])
 
 
-# Helper function to fetch image source from     OMDb API
+# Helper function to fetch image source from OMDb API
 def fetch_movie_image(imdb_id):
-    url = f"http://www.omdbapi.com/?i={imdb_id}&apikey={OMDB_API_KEY}"
+    url = f"http://www.omdbapi.com/?i={imdb_id}&apikey=1e64c9b4"
     response = requests.get(url)
     if response.status_code == 200:
         data = response.json()
@@ -80,4 +80,4 @@ def get_similar_movies(imdb_id):
     return jsonify(similar_movies)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
