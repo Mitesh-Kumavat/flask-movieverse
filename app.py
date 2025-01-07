@@ -32,20 +32,20 @@ def fetch_movie_image(imdb_id):
 # Fetch top 10 movies by average vote
 @app.route('/api/top-movies', methods=['GET'])
 def get_top_movies():
-    top_movies = df.nlargest(10, 'avg_vote')[['title', 'original_title', 'year', 'avg_vote', 'imdb_title_id']].to_dict(orient='records')
+    top_movies = df.nlargest(10, 'avg_vote')[['original_title', 'year', 'avg_vote', 'imdb_title_id']].to_dict(orient='records')
     for movie in top_movies:
         movie['img_src'] = fetch_movie_image(movie['imdb_title_id']) 
-    return jsonify(top_movies)
+    return (top_movies)
 
 
 
 # Fetch top 10 best-featured movies (e.g., based on votes)
 @app.route('/api/featured-movies', methods=['GET'])
 def get_top_featured_movies():
-    top_featured = df.nlargest(10, 'votes')[['title', 'original_title', 'year', 'avg_vote', 'imdb_title_id']].to_dict(orient='records')
+    top_featured = df.nlargest(10, 'votes')[['original_title', 'year', 'avg_vote', 'imdb_title_id']].to_dict(orient='records')
     for movie in top_featured:
         movie['img_src'] = fetch_movie_image(movie['imdb_title_id'])  # Add image URL
-    return jsonify(top_featured)
+    return (top_featured)
 
 
 
@@ -58,7 +58,7 @@ def get_movie_details(imdb_id):
 
     movie_details = movie[0]
     movie_details['img_src'] = fetch_movie_image(imdb_id)  # Add image URL
-    return jsonify(movie_details)
+    return (movie_details)
 
 
 
@@ -73,11 +73,11 @@ def get_similar_movies(imdb_id):
     cosine_similarities = cosine_similarity(tfidf_matrix[movie_index], tfidf_matrix).flatten()
     similar_indices = cosine_similarities.argsort()[-11:-1][::-1]  # Exclude the movie itself
 
-    similar_movies = df.iloc[similar_indices][['title', 'avg_vote', 'imdb_title_id']].to_dict(orient='records')
+    similar_movies = df.iloc[similar_indices][['original_title', 'year', 'avg_vote', 'imdb_title_id']].to_dict(orient='records')
     for movie in similar_movies:
         movie['img_src'] = fetch_movie_image(movie['imdb_title_id'])  # Add image URL
 
-    return jsonify(similar_movies)
+    return (similar_movies)
 
 if __name__ == '__main__':
     app.run()
