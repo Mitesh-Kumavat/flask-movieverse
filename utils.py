@@ -21,8 +21,13 @@ def get_movie_image(imdb_id):
     return ''
 
 def get_movie_trailer(title):
-    if title:
-        return fetch_trailer_link(title)
+    search_url = f"https://www.googleapis.com/youtube/v3/search?part=snippet&q={title} trailer&key={YOUTUBE_API_KEY}"
+    response = requests.get(search_url)
+    if response.status_code == 200:
+        data = response.json()
+        if 'items' in data and len(data['items']) > 0:
+            video_id = data['items'][0]['id']['videoId']
+            return f"https://www.youtube.com/watch?v={video_id}"
     return None
 
 def calculate_similarity(search_query, movies_df):
