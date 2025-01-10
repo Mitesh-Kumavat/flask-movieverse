@@ -1,1 +1,9 @@
 .env
+/temp
+temp
+/__pycache__
+./__pycache__
+.__pycache__
+__pycache__
+./temp
+.temp
