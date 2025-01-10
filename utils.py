@@ -21,6 +21,7 @@ def get_movie_image(imdb_id):
     return ''
 
 def get_movie_trailer(title):
+    print("START FINDING TRAILER")
     search_url = f"https://www.googleapis.com/youtube/v3/search?part=snippet&q={title} trailer&key={YOUTUBE_API_KEY}"
     response = requests.get(search_url)
     if response.status_code == 200:
