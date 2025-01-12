@@ -41,7 +41,4 @@ def calculate_similarity(search_query, movies_df):
     top_indices = cosine_sim.argsort()[-10:][::-1]
     top_movies = movies_df.iloc[top_indices][['imdb_title_id', 'original_title', 'year', 'avg_vote', 'description', 'genre']].to_dict(orient='records')
 
-    for movie in top_movies:
-        movie['img_src'] = fetch_movie_image(movie['imdb_title_id'])
-
     return top_movies
