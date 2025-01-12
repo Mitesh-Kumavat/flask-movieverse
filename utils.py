@@ -28,7 +28,8 @@ def get_movie_trailer(title):
         data = response.json()
         if 'items' in data and len(data['items']) > 0:
             video_id = data['items'][0]['id']['videoId']
-            return f"https://www.youtube.com/watch?v={video_id}"
+            trailer_url = f"https://www.youtube.com/embed/{video_id}?&autoplay=1&mute=0&rel=0"
+            return trailer_url
     return None
 
 def calculate_similarity(search_query, movies_df):
