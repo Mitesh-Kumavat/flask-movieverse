@@ -8,10 +8,14 @@ from utils import (
 
 routes = Blueprint('routes', __name__)
 
+@routes.route('/ping', methods=['GET'])
+def ping():
+    return jsonify({"message": "Server is alive"}), 200
+
 @routes.route('/api/top-movies', methods=['GET'])
 def get_top_movies():
     conn = get_db_connection()
-    query = "SELECT original_title, year, avg_vote, imdb_title_id FROM movies ORDER BY worlwide_gross_income DESC LIMIT 10"
+    query = "SELECT original_title, year, avg_vote, imdb_title_id FROM movies ORDER BY worlwide_gross_income DESC LIMIT 15"
     movies = conn.execute(query).fetchall()
     conn.close()
 
@@ -21,7 +25,7 @@ def get_top_movies():
 @routes.route('/api/featured-movies', methods=['GET'])
 def get_top_featured_movies():
     conn = get_db_connection()
-    query = "SELECT original_title, year, avg_vote, imdb_title_id FROM movies ORDER BY votes DESC LIMIT 10"
+    query = "SELECT original_title, year, avg_vote, imdb_title_id FROM movies ORDER BY votes DESC LIMIT 15"
     movies = conn.execute(query).fetchall()
     conn.close()
 
@@ -52,12 +56,11 @@ def search_movie():
 
     conn = get_db_connection()
 
-    # Use SQL LIKE or full-text search for filtering
     query = """
     SELECT imdb_title_id, original_title, year, avg_vote, description, genre
     FROM movies
     WHERE description LIKE ? OR genre LIKE ? OR original_title LIKE ?
-    LIMIT 12
+    LIMIT 20
     """
     like_query = f"%{search_query}%"
     movies = conn.execute(query, (like_query, like_query, like_query)).fetchall()
