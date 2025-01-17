@@ -4,21 +4,12 @@ import requests
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-OMDB_API_KEY = os.getenv("OMDB_API_KEY") 
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
 
 def get_db_connection():
     conn = sqlite3.connect('movies.db')
     conn.row_factory = sqlite3.Row
     return conn
-
-def get_movie_image(imdb_id):
-    url = f"http://www.omdbapi.com/?i={imdb_id}&apikey={OMDB_API_KEY}"
-    response = requests.get(url)
-    if response.status_code == 200:
-        data = response.json()
-        return data.get('Poster', '')
-    return ''
 
 def get_movie_trailer(title):
     print("START FINDING TRAILER")

@@ -60,7 +60,7 @@ def search_movie():
     SELECT imdb_title_id, original_title, year, avg_vote, description, genre
     FROM movies
     WHERE description LIKE ? OR genre LIKE ? OR original_title LIKE ?
-    LIMIT 20
+    LIMIT 15
     """
     like_query = f"%{search_query}%"
     movies = conn.execute(query, (like_query, like_query, like_query)).fetchall()
@@ -119,7 +119,7 @@ def filter_and_sort_movies():
     max_rating = request.args.get('max_rating', None, type=float)
     sort_by = request.args.get('sort_by', 'avg_vote')  # Default sorting by rating
     order = request.args.get('order', 'desc').lower()  # Default order descending
-    limit = int(request.args.get('limit', 50))  # Default limit
+    limit = int(request.args.get('limit', 20))  # Default limit
     offset = int(request.args.get('offset', 0))  # Default offset
 
     # Connect to the database
