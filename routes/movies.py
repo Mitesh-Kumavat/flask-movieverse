@@ -102,14 +102,6 @@ def get_similar_movies(imdb_id):
 
 @routes.route('/movies/filter', methods=['GET'])
 def filter_and_sort_movies():
-    """
-    Optimized API to filter and sort movies based on genres, languages, release years, ratings, and more.
-    """
-    import time
-
-    # Start timer
-    start_time = time.time()
-
     # Get query parameters
     genre = request.args.get('genre', '').lower()
     language = request.args.get('language', '').lower()
@@ -160,8 +152,7 @@ def filter_and_sort_movies():
     filtered_movies = [dict(zip(column_names, movie)) for movie in movies]
 
     # Add execution time to response
-    execution_time = time.time() - start_time
-    return jsonify({"movies": filtered_movies, "execution_time": execution_time}), 200
+    return jsonify({"movies": filtered_movies}), 200
 
 # Register routes
 def register_routes(app):
