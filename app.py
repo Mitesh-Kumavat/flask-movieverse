@@ -14,12 +14,12 @@ register_routes(app)
 def keep_server_awake():
     while True:
         try:
-            server_url = "https://flask-movieverse.onrender.com/ping"
+            server_url = "https://flask-movieverse.onrender.com/api/ping"
             response = requests.get(server_url)
             print(f"Pinged server: {response.status_code}")
         except Exception as e:
             print(f"Error pinging server: {e}")
-        time.sleep(600)
+        time.sleep(60)
 
 def start_background_thread():
     thread = threading.Thread(target=keep_server_awake, daemon=True)

@@ -1,24 +1,30 @@
-# database/create_user_table.py
 import sqlite3
 
-def create_users_table():
-    conn = sqlite3.connect('database/movies.db')
-    cursor = conn.cursor()
+conn = sqlite3.connect('database/movies.db')
 
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            userId INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            email TEXT UNIQUE NOT NULL,
-            password TEXT NOT NULL,
-            watchlist TEXT DEFAULT '[]',
-            favorites TEXT DEFAULT '[]'
-        )
-    ''')
+conn.execute("DROP TABLE users")
 
-    conn.commit()
-    conn.close()
-    print("Users table created successfully.")
+conn.execute("""
+CREATE TABLE IF NOT EXISTS users (
+    userId INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT NOT NULL UNIQUE,
+    email TEXT NOT NULL UNIQUE,
+    password TEXT NOT NULL
+);
+""")
 
-if __name__ == "__main__":
-    create_users_table()
+conn.execute("""
+CREATE TABLE IF NOT EXISTS watchlist (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    userId INTEGER NOT NULL,
+    movieName TEXT NOT NULL,
+    movieImdbId TEXT NOT NULL,
+    movieImg TEXT NOT NULL,
+    UNIQUE(userId, movieImdbId),
+    FOREIGN KEY (userId) REFERENCES users(userId) ON DELETE CASCADE
+);
+""")
+
+conn.close()
+print("Database initialized.")
+   
