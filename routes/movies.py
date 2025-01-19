@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
+from database.db_utils import get_db_connection
 import pandas as pd
-from utils import (
-    get_db_connection,
+from util.utils import (
     get_movie_trailer,
     calculate_similarity
 )
@@ -12,7 +12,7 @@ routes = Blueprint('routes', __name__)
 def ping():
     return jsonify({"message": "Server is alive"}), 200
 
-@routes.route('/api/top-movies', methods=['GET'])
+@routes.route('/top-movies', methods=['GET'])
 def get_top_movies():
     conn = get_db_connection()
     query = "SELECT original_title, year, avg_vote, imdb_title_id FROM movies ORDER BY worlwide_gross_income DESC LIMIT 15"
@@ -22,7 +22,7 @@ def get_top_movies():
     top_movies = [dict(movie) for movie in movies]
     return jsonify(top_movies)
 
-@routes.route('/api/featured-movies', methods=['GET'])
+@routes.route('/featured-movies', methods=['GET'])
 def get_top_featured_movies():
     conn = get_db_connection()
     query = "SELECT original_title, year, avg_vote, imdb_title_id FROM movies ORDER BY votes DESC LIMIT 15"
@@ -32,7 +32,7 @@ def get_top_featured_movies():
     top_featured = [dict(movie) for movie in movies]
     return jsonify(top_featured)
 
-@routes.route('/api/movie/<imdb_id>', methods=['GET'])
+@routes.route('/movie/<imdb_id>', methods=['GET'])
 def get_movie_details(imdb_id):
     conn = get_db_connection()
     query = "SELECT * FROM movies WHERE imdb_title_id = ?"
@@ -47,7 +47,7 @@ def get_movie_details(imdb_id):
     movie_details['trailer_link'] = get_movie_trailer(title)
     return jsonify(movie_details)
 
-@routes.route('/api/movie/search', methods=['GET'])
+@routes.route('/movie/search', methods=['GET'])
 def search_movie():
     search_query = request.args.get('search', '').strip()
 
@@ -73,7 +73,7 @@ def search_movie():
     search_results = [dict(movie) for movie in movies]
     return jsonify(search_results), 200
 
-@routes.route('/api/movie/<imdb_id>/similar', methods=['GET'])
+@routes.route('/movie/<imdb_id>/similar', methods=['GET'])
 def get_similar_movies(imdb_id):
     conn = get_db_connection()
     query = "SELECT imdb_title_id, original_title, year, avg_vote, description, genre FROM movies"
@@ -100,7 +100,7 @@ def get_similar_movies(imdb_id):
     similar_movies = [movie for movie in similar_movies if movie['imdb_title_id'] != imdb_id]
     return jsonify(similar_movies), 200
 
-@routes.route('/api/movies/filter', methods=['GET'])
+@routes.route('/movies/filter', methods=['GET'])
 def filter_and_sort_movies():
     """
     Optimized API to filter and sort movies based on genres, languages, release years, ratings, and more.

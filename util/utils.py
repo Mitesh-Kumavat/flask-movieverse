@@ -1,15 +1,9 @@
-import sqlite3
 import os
 import requests
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
-
-def get_db_connection():
-    conn = sqlite3.connect('movies.db')
-    conn.row_factory = sqlite3.Row
-    return conn
 
 def get_movie_trailer(title):
     print("START FINDING TRAILER")

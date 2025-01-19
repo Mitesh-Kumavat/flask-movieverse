@@ -8,6 +8,7 @@ import requests
 app = Flask(__name__)
 CORS(app)
 
+# Register routes
 register_routes(app)
 
 def keep_server_awake():
