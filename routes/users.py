@@ -3,7 +3,6 @@ import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
 from database.db_utils import get_db_connection
 
-
 routes = Blueprint('users', __name__)
 @routes.route('/register', methods=['POST'])
 def register():
@@ -78,7 +77,6 @@ def toggle_watchlist(user_id):
     ).fetchone()
 
     if movie:
-        # Remove movie from watchlist
         conn.execute(
             "DELETE FROM watchlist WHERE userId = ? AND movieImdbId = ?",
             (user_id, movie_imdb_id)
@@ -87,7 +85,6 @@ def toggle_watchlist(user_id):
         conn.close()
         return jsonify({"message": "Movie removed from watchlist"}), 200
     else:
-        # Add movie to watchlist
         conn.execute(
             "INSERT INTO watchlist (userId, movieName, movieImdbId, movieImg) VALUES (?, ?, ?, ?)",
             (user_id, movie_name, movie_imdb_id, movie_img)
@@ -100,14 +97,12 @@ def toggle_watchlist(user_id):
 def get_user_details(user_id):
     conn = get_db_connection()
 
-    # Fetch user details from the users table
     user = conn.execute("SELECT userId, username, email FROM users WHERE userId = ?", (user_id,)).fetchone()
 
     if not user:
         conn.close()
         return jsonify({"error": "User not found"}), 404
 
-    # Fetch the user's watchlist from the watchlist table
     watchlist = conn.execute("""
         SELECT movieName, movieImdbId, movieImg
         FROM watchlist
@@ -116,7 +111,6 @@ def get_user_details(user_id):
 
     conn.close()
 
-    # Prepare the response data
     user_details = {
         "userId": user["userId"],
         "username": user["username"],

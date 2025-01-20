@@ -15,7 +15,7 @@ def ping():
 @routes.route('/top-movies', methods=['GET'])
 def get_top_movies():
     conn = get_db_connection()
-    query = "SELECT original_title, year, avg_vote, imdb_title_id FROM movies ORDER BY worlwide_gross_income DESC LIMIT 15"
+    query = "SELECT original_title, year, img, avg_vote, imdb_title_id FROM movies ORDER BY worlwide_gross_income DESC LIMIT 15"
     movies = conn.execute(query).fetchall()
     conn.close()
 
@@ -25,7 +25,7 @@ def get_top_movies():
 @routes.route('/featured-movies', methods=['GET'])
 def get_top_featured_movies():
     conn = get_db_connection()
-    query = "SELECT original_title, year, avg_vote, imdb_title_id FROM movies ORDER BY votes DESC LIMIT 15"
+    query = "SELECT original_title, year, avg_vote, img, imdb_title_id FROM movies ORDER BY votes DESC LIMIT 15"
     movies = conn.execute(query).fetchall()
     conn.close()
 
@@ -57,7 +57,7 @@ def search_movie():
     conn = get_db_connection()
 
     query = """
-    SELECT imdb_title_id, original_title, year, avg_vote, description, genre
+    SELECT imdb_title_id, original_title, img, year, avg_vote, description, genre
     FROM movies
     WHERE description LIKE ? OR genre LIKE ? OR original_title LIKE ?
     LIMIT 15
@@ -69,56 +69,51 @@ def search_movie():
     if not movies:
         return jsonify({"message": "No movies found"}), 200
 
-    # Map results to a list of dictionaries
+    
     search_results = [dict(movie) for movie in movies]
     return jsonify(search_results), 200
 
 @routes.route('/movie/<imdb_id>/similar', methods=['GET'])
 def get_similar_movies(imdb_id):
     conn = get_db_connection()
-    query = "SELECT imdb_title_id, original_title, year, avg_vote, description, genre FROM movies"
+    query = "SELECT imdb_title_id, original_title, img, year, avg_vote, description, genre FROM movies"
     movies = conn.execute(query).fetchall()
     conn.close()
 
     if not movies:
         return jsonify({"error": "No movies found"}), 404
 
-    column_names = ['imdb_title_id', 'original_title', 'year', 'avg_vote', 'description', 'genre']
+    column_names = ['imdb_title_id', 'original_title','img', 'year', 'avg_vote', 'description', 'genre' ]
     movies_df = pd.DataFrame(movies, columns=column_names)
-
-    # Fetch details of the movie to find similar ones
+    
     movie = movies_df[movies_df['imdb_title_id'] == imdb_id]
     if movie.empty:
         return jsonify({"error": "Movie not found"}), 404
 
-    # Calculate similarity based on combined features
     movie_features = movie.iloc[0]['description'] + ' ' + movie.iloc[0]['genre']
     movies_df['combined_features'] = movies_df['description'] + ' ' + movies_df['genre']
     similar_movies = calculate_similarity(movie_features, movies_df)
-
-    # Exclude the original movie from the results
+ 
     similar_movies = [movie for movie in similar_movies if movie['imdb_title_id'] != imdb_id]
     return jsonify(similar_movies), 200
 
 @routes.route('/movies/filter', methods=['GET'])
 def filter_and_sort_movies():
-    # Get query parameters
     genre = request.args.get('genre', '').lower()
     language = request.args.get('language', '').lower()
     min_year = request.args.get('min_year', None, type=int)
     max_year = request.args.get('max_year', None, type=int)
     min_rating = request.args.get('min_rating', None, type=float)
     max_rating = request.args.get('max_rating', None, type=float)
-    sort_by = request.args.get('sort_by', 'avg_vote')  # Default sorting by rating
-    order = request.args.get('order', 'desc').lower()  # Default order descending
-    limit = int(request.args.get('limit', 20))  # Default limit
-    offset = int(request.args.get('offset', 0))  # Default offset
+    sort_by = request.args.get('sort_by', 'avg_vote')  
+    order = request.args.get('order', 'desc').lower()  
+    limit = int(request.args.get('limit', 20))  
+    offset = int(request.args.get('offset', 0))  
 
-    # Connect to the database
     conn = get_db_connection()
     try:
         query = """
-            SELECT imdb_title_id, original_title, year, avg_vote, description, genre, language_1 
+            SELECT imdb_title_id,img, original_title, year, avg_vote, description, genre, language_1 
             FROM movies
             WHERE 
                 (:genre IS NULL OR LOWER(genre) LIKE '%' || :genre || '%') AND
@@ -146,14 +141,11 @@ def filter_and_sort_movies():
         return jsonify({"error": "Query execution failed", "details": str(e)}), 500
 
     conn.close()
-
-    # Convert to JSON
-    column_names = ['imdb_title_id', 'original_title', 'year', 'avg_vote', 'description', 'genre', 'language_1']
+    
+    column_names = ['imdb_title_id','img', 'original_title', 'year', 'avg_vote', 'description', 'genre', 'language_1']
     filtered_movies = [dict(zip(column_names, movie)) for movie in movies]
 
-    # Add execution time to response
     return jsonify({"movies": filtered_movies}), 200
 
-# Register routes
 def register_routes(app):
     app.register_blueprint(routes)

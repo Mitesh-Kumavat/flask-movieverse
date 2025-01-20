@@ -24,6 +24,6 @@ def calculate_similarity(search_query, movies_df):
     query_vector = vectorizer.transform([search_query])
     cosine_sim = cosine_similarity(query_vector, tfidf_matrix).flatten()
     top_indices = cosine_sim.argsort()[-16:][::-1]
-    top_movies = movies_df.iloc[top_indices][['imdb_title_id', 'original_title', 'year', 'avg_vote', 'description', 'genre']].to_dict(orient='records')
+    top_movies = movies_df.iloc[top_indices][['imdb_title_id', 'original_title', 'img', 'year', 'avg_vote', 'description', 'genre']].to_dict(orient='records')
 
     return top_movies
