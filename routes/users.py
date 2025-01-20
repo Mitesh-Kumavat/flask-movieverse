@@ -117,9 +117,9 @@ def get_user_details(user_id):
         "email": user["email"],
         "watchlist": [
             {
-                "movieName": movie["movieName"],
-                "movieImdbId": movie["movieImdbId"],
-                "movieImg": movie["movieImg"]
+                "original_title": movie["movieName"],
+                "imdb_title_id": movie["movieImdbId"],
+                "img": movie["movieImg"]
             }
             for movie in watchlist
         ]
