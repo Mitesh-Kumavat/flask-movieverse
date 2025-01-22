@@ -63,35 +63,50 @@ def get_watchlist(user_id):
 @routes.route('/user/<int:user_id>/watchlist', methods=['POST'])
 def toggle_watchlist(user_id):
     data = request.json
-    movie_name = data.get('movieName')
-    movie_imdb_id = data.get('movieImdbId')
-    movie_img = data.get('movieImg')
+    movie_id = data.get('movieId')
 
-    if not movie_name or not movie_imdb_id or not movie_img:
-        return jsonify({"error": "All movie fields are required"}), 400
+    try:
+        if not movie_id:
+            return jsonify({"error": "Movie ID is required"}), 400
 
-    conn = get_db_connection()
-    movie = conn.execute(
-        "SELECT * FROM watchlist WHERE userId = ? AND movieImdbId = ?",
-        (user_id, movie_imdb_id)
-    ).fetchone()
+        conn = get_db_connection()
 
-    if movie:
-        conn.execute(
-            "DELETE FROM watchlist WHERE userId = ? AND movieImdbId = ?",
-            (user_id, movie_imdb_id)
-        )
-        conn.commit()
+        movie_details = conn.execute(
+            "SELECT original_title, imdb_title_id , img FROM movies WHERE imdb_title_id = ?",
+            (movie_id,)
+        ).fetchone()
+
+        print("HERE IS THE MOVIEDETAILS ")
+        print("MOVIE DETAILS :  " , movie_details)
+        if not movie_details:
+            conn.close()
+            return jsonify({"error": "Movie not found"}), 404
+
+        movie = conn.execute(
+            "SELECT * FROM watchlist WHERE userId = ? AND movieImdbId = ?",
+            (user_id, movie_details['imdb_title_id'])
+        ).fetchone()
+
+        if movie:
+            conn.execute(
+                "DELETE FROM watchlist WHERE userId = ? AND movieImdbId = ?",
+                (user_id, movie_details['imdb_title_id'])
+            )
+            conn.commit()
+            conn.close()
+            return jsonify({"message": "Movie removed from watchlist"}), 200
+        else:
+            conn.execute(
+                "INSERT INTO watchlist (userId, movieName, movieImdbId, movieImg) VALUES (?, ?, ?, ?)",
+                (user_id, movie_details['original_title'], movie_details['imdb_title_id'], movie_details['img'])
+            )
+            conn.commit()
+            conn.close()
+            return jsonify({"message": "Movie added to watchlist"}), 201
+    except Exception as e:
         conn.close()
-        return jsonify({"message": "Movie removed from watchlist"}), 200
-    else:
-        conn.execute(
-            "INSERT INTO watchlist (userId, movieName, movieImdbId, movieImg) VALUES (?, ?, ?, ?)",
-            (user_id, movie_name, movie_imdb_id, movie_img)
-        )
-        conn.commit()
-        conn.close()
-        return jsonify({"message": "Movie added to watchlist"}), 201
+        print("Error from the exceptioin : " , e)
+        return jsonify({"error": "Server Error"}), 500
     
 @routes.route("/user/<int:user_id>", methods=['GET'])
 def get_user_details(user_id):
