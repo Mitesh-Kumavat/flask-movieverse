@@ -15,7 +15,7 @@ def ping():
 @routes.route('/top-movies', methods=['GET'])
 def get_top_movies():
     conn = get_db_connection()
-    query = "SELECT original_title, year, img, avg_vote, imdb_title_id FROM movies ORDER BY worlwide_gross_income DESC LIMIT 15"
+    query = "SELECT original_title, year, img, avg_vote, imdb_title_id FROM movies ORDER BY worlwide_gross_income DESC LIMIT 20"
     movies = conn.execute(query).fetchall()
     conn.close()
 
@@ -25,7 +25,7 @@ def get_top_movies():
 @routes.route('/featured-movies', methods=['GET'])
 def get_top_featured_movies():
     conn = get_db_connection()
-    query = "SELECT original_title, year, avg_vote, img, imdb_title_id FROM movies ORDER BY votes DESC LIMIT 15"
+    query = "SELECT original_title, year, avg_vote, img, imdb_title_id FROM movies ORDER BY votes DESC LIMIT 20"
     movies = conn.execute(query).fetchall()
     conn.close()
 
@@ -59,11 +59,10 @@ def search_movie():
     query = """
     SELECT imdb_title_id, original_title, img, year, avg_vote, description, genre
     FROM movies
-    WHERE description LIKE ? OR genre LIKE ? OR original_title LIKE ?
-    LIMIT 15
+    WHERE genre LIKE ? OR original_title LIKE ?
     """
     like_query = f"%{search_query}%"
-    movies = conn.execute(query, (like_query, like_query, like_query)).fetchall()
+    movies = conn.execute(query, (like_query, like_query)).fetchall()
     conn.close()
 
     if not movies:
