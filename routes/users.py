@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request
 import sqlite3
+from DataStrucure.queue import Queue
 from werkzeug.security import generate_password_hash, check_password_hash
 from database.db_utils import get_db_connection
 
@@ -48,65 +49,70 @@ def login():
 
     return jsonify({"message": "Login successful", "userId": user['userId']}), 200
 
+user_queues = {}
+
 @routes.route('/user/<int:user_id>/watchlist', methods=['GET'])
 def get_watchlist(user_id):
-    conn = get_db_connection()
-    movies = conn.execute(
-        "SELECT movieName, movieImdbId, movieImg FROM watchlist WHERE userId = ?",
-        (user_id,)
-    ).fetchall()
-    conn.close()
+    if user_id not in user_queues:
+        user_queues[user_id] = Queue()
 
-    return jsonify([dict(movie) for movie in movies]), 200
+    watchlist_queue = user_queues[user_id]
+    watchlist_items = watchlist_queue.get_all()
 
+    return jsonify(watchlist_items), 200
 
 @routes.route('/user/<int:user_id>/watchlist', methods=['POST'])
 def toggle_watchlist(user_id):
     data = request.json
     movie_id = data.get('movieId')
 
-    try:
-        if not movie_id:
-            return jsonify({"error": "Movie ID is required"}), 400
+    if not movie_id:
+        return jsonify({"error": "Movie ID is required"}), 400
 
-        conn = get_db_connection()
+    conn = get_db_connection()
 
-        movie_details = conn.execute(
-            "SELECT original_title, imdb_title_id , img FROM movies WHERE imdb_title_id = ?",
-            (movie_id,)
-        ).fetchone()
+    movie_details = conn.execute(
+        "SELECT original_title, imdb_title_id, img FROM movies WHERE imdb_title_id = ?",
+        (movie_id,)
+    ).fetchone()
 
-        print("HERE IS THE MOVIEDETAILS ")
-        print("MOVIE DETAILS :  " , movie_details)
-        if not movie_details:
-            conn.close()
-            return jsonify({"error": "Movie not found"}), 404
-
-        movie = conn.execute(
-            "SELECT * FROM watchlist WHERE userId = ? AND movieImdbId = ?",
-            (user_id, movie_details['imdb_title_id'])
-        ).fetchone()
-
-        if movie:
-            conn.execute(
-                "DELETE FROM watchlist WHERE userId = ? AND movieImdbId = ?",
-                (user_id, movie_details['imdb_title_id'])
-            )
-            conn.commit()
-            conn.close()
-            return jsonify({"message": "Movie removed from watchlist"}), 200
-        else:
-            conn.execute(
-                "INSERT INTO watchlist (userId, movieName, movieImdbId, movieImg) VALUES (?, ?, ?, ?)",
-                (user_id, movie_details['original_title'], movie_details['imdb_title_id'], movie_details['img'])
-            )
-            conn.commit()
-            conn.close()
-            return jsonify({"message": "Movie added to watchlist"}), 201
-    except Exception as e:
+    if not movie_details:
         conn.close()
-        print("Error from the exceptioin : " , e)
-        return jsonify({"error": "Server Error"}), 500
+        return jsonify({"error": "Movie not found"}), 404
+
+    if user_id not in user_queues:
+        user_queues[user_id] = Queue()
+
+    watchlist_queue = user_queues[user_id]
+
+    existing_movies = [movie for movie in watchlist_queue.get_all() if movie["imdb_title_id"] == movie_details["imdb_title_id"]]
+
+    if existing_movies:
+        watchlist_queue.items = [movie for movie in watchlist_queue.items if movie["imdb_title_id"] != movie_details["imdb_title_id"]]
+        conn.execute(
+            "DELETE FROM watchlist WHERE userId = ? AND movieImdbId = ?",
+            (user_id, movie_details['imdb_title_id'])
+        )
+        conn.commit()
+        conn.close()
+        return jsonify({"message": "Movie removed from watchlist"}), 200
+    else:
+        movie_entry = {
+            "original_title": movie_details["original_title"],
+            "imdb_title_id": movie_details["imdb_title_id"],
+            "img": movie_details["img"]
+        }
+        watchlist_queue.enqueue(movie_entry)
+
+        conn.execute(
+            "INSERT INTO watchlist (userId, movieName, movieImdbId, movieImg) VALUES (?, ?, ?, ?)",
+            (user_id, movie_details['original_title'], movie_details['imdb_title_id'], movie_details['img'])
+        )
+        conn.commit()
+        conn.close()
+        return jsonify({"message": "Movie added to watchlist"}), 201
+  
+  
     
 @routes.route("/user/<int:user_id>", methods=['GET'])
 def get_user_details(user_id):
