@@ -1,9 +1,4 @@
 .env
-/temp
-temp
-/__pycache__
-./__pycache__
-.__pycache__
+movies.db
+database/movies.db
 __pycache__
-./temp
-.temp
