@@ -112,8 +112,6 @@ def toggle_watchlist(user_id):
         conn.close()
         return jsonify({"message": "Movie added to watchlist"}), 201
   
-  
-    
 @routes.route("/user/<int:user_id>", methods=['GET'])
 def get_user_details(user_id):
     conn = get_db_connection()
@@ -147,3 +145,38 @@ def get_user_details(user_id):
     }
 
     return jsonify(user_details), 200
+
+# Those two methods are for testing purposes only, they are not part of the API
+@routes.route("/users", methods=['GET'])
+def get_all_users_details():
+    conn = get_db_connection()
+
+    users = conn.execute("SELECT userId, username, email FROM users").fetchall()
+
+    if not users:
+        conn.close()
+        return jsonify({"error": "Users not found"}), 404
+
+    users_details = [
+        {
+            "userId": user["userId"],
+            "username": user["username"],
+            "email": user["email"]
+        }
+        for user in users
+    ]
+
+    conn.close()
+
+    return jsonify(users_details), 200
+
+@routes.route("/users", methods=['DELETE'])
+def delete_all_users():
+    conn = get_db_connection()
+
+    conn.execute("DELETE FROM users")
+    conn.commit()
+
+    conn.close()
+
+    return jsonify({"message": "All users deleted successfully"}), 200
