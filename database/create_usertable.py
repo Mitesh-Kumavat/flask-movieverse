@@ -2,8 +2,6 @@ import sqlite3
 
 conn = sqlite3.connect('database/movies.db')
 
-conn.execute("DROP TABLE users")
-
 conn.execute("""
 CREATE TABLE IF NOT EXISTS users (
     userId INTEGER PRIMARY KEY AUTOINCREMENT,

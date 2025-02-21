@@ -61,6 +61,7 @@ def get_watchlist(user_id):
 
     return jsonify(watchlist_items), 200
 
+# -> Toggle the watchlist , if user already has the movie in his watchlist then this API removes that movie from the user's watchlist. But if that doesn't the case then this api will add that movie in user's watchlist.
 @routes.route('/user/<int:user_id>/watchlist', methods=['POST'])
 def toggle_watchlist(user_id):
     data = request.json

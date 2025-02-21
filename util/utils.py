@@ -1,19 +1,20 @@
 import os
+from dotenv import load_dotenv
 import requests
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
+load_dotenv()
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
 
 def get_movie_trailer(title):
-    print("START FINDING TRAILER")
     search_url = f"https://www.googleapis.com/youtube/v3/search?part=snippet&q={title} trailer&key={YOUTUBE_API_KEY}"
     response = requests.get(search_url)
     if response.status_code == 200:
         data = response.json()
         if 'items' in data and len(data['items']) > 0:
             video_id = data['items'][0]['id']['videoId']
-            trailer_url = f"https://www.youtube.com/embed/{video_id}?&autoplay=1&mute=0&rel=0"
+            trailer_url = f"https://www.youtube.com/embed/{video_id}?&autoplay=0&mute=0&rel=0"
             return trailer_url
     return None
 

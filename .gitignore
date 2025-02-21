@@ -1,4 +1,2 @@
 .env
-movies.db
-database/movies.db
 __pycache__
