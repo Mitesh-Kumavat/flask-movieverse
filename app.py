@@ -3,9 +3,9 @@ from flask_cors import CORS
 from routes import register_routes
 
 app = Flask(__name__)
-CORS(app ,origins=["http://localhost:5500", "https://flask-movieverse.vercel.app"])
+CORS(app)
 
 register_routes(app)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run()
